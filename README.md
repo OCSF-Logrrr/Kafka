@@ -2,20 +2,15 @@
 
 ## 목차
 
-* [1. 프로젝트 개요](#1-프로젝트-개요)
-* [2. 사전 준비 사항](#2-사전-준비-사항)
-* [3. 리포지토리 클론 및 구조](#3-리포지토리-클론-및-구조)
-* [4. docker-compose.yml 검토 및 수정](#4-docker-composeyml-검토-및-수정)
-* [5. transform 코드 및 Dockerfile](#5-transform-코드-및-dockerfile)
-* [6. 실행 및 검증](#6-실행-및-검증)
-* [7. 외부 데이터 흐름 테스트 (환경 구성 완료)](#7-외부-데이터-흐름-테스트-환경-구성-완료)
-* [8. 운영 및 확장](#8-운영-및-확장)
-
-# Kafka 로그 변환 서버 구축
-
-이 문서는 Ubuntu 환경에서 Docker와 Apache Kafka(KRaft 모드)를 이용해 Zookeeper 없이 멀티 브로커 클러스터와 Python 기반 `transform` 서비스를 설정하는 방법을 안내합니다.
-
----
+* [프로젝트 개요](#프로젝트-개요)
+* [사전 준비 사항](#사전-준비-사항)
+* [리포지토리 클론 및 구조](#리포지토리-클론-및-구조)
+* [docker-compose.yml 검토 및 수정](#docker-composeyml-검토-및-수정)
+* [transform 코드 및 Dockerfile](#transform-코드-및-dockerfile)
+* [실행 및 검증](#실행-및-검증)
+* [외부 데이터 흐름 테스트](#외부-데이터-흐름-테스트)
+* [운영 및 확장](#운영-및-확장)
+* [주요 명령어](#주요-명령어)
 
 ## 프로젝트 개요
 
@@ -27,7 +22,7 @@
 
 ## 사전 준비 사항
 
-1. **운영체제**: Ubuntu 20.04 / 24.04
+1. **운영체제**: Ubuntu 24.04
 2. **필수 패키지**:
 
    ```bash
@@ -69,7 +64,7 @@ cd kafka-transform-server
 ```yaml
 version: '3.8'
 services:
-  # Broker #1
+  # Broker 1
   kafka1:
     image: apache/kafka:3.9.1
     container_name: kafka1
@@ -91,7 +86,7 @@ services:
     networks:
       - kt-net
 
-  # Broker #2
+  # Broker 2
   kafka2:
     image: apache/kafka:3.9.1
     container_name: kafka2
@@ -113,7 +108,7 @@ services:
     networks:
       - kt-net
 
-  # Broker #3
+  # Broker 3
   kafka3:
     image: apache/kafka:3.9.1
     container_name: kafka3
@@ -244,8 +239,8 @@ for msg in consumer:
    ```bash
    docker exec -it kafka1 \
      kafka-topics --create --topic raw-logs --bootstrap-server kafka1:9092 --partitions 3 --replication-factor 3
-   docker exec -it kafka1 \
-     kafka-topics --create --topic ocsf-logs --bootstrap-server kafka1:9092 --partitions 3 --replication-factor 3
+   kafka-console-producer --topic raw-logs --bootstrap-server kafka1:9092
+
    ```
 4. 로그 모니터링:
 
@@ -304,6 +299,51 @@ Vector와 ELK(Logstash/Elasticsearch/Kibana) 환경이 이미 구축되어 있�
 * **보안**: TLS/SASL 설정
 * **모니터링**: Prometheus/Grafana 연동
 * **로그 수집**: Filebeat, Fluentd 등
+
+## 주요 명령어
+
+### 사전 준비
+
+```bash
+sudo apt update
+sudo apt install -y apt-transport-https ca-certificates curl software-properties-common git
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker $USER
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+```
+
+### 리포지토리 클론
+
+```bash
+cd ~/projects
+git clone https://github.com/OCSF-Logrrr/Kafka.git kafka-transform-server
+cd kafka-transform-server
+```
+
+### 컨테이너 실행 및 관리
+
+```bash
+docker-compose up -d
+docker-compose ps
+docker logs -f transformer
+```
+
+### 토픽 생성
+
+```bash
+docker exec -it kafka1 kafka-topics --create --topic raw-logs --bootstrap-server kafka1:9092 --partitions 3 --replication-factor 3
+docker exec -it kafka1 kafka-topics --create --topic ocsf-logs --bootstrap-server kafka1:9092 --partitions 3 --replication-factor 3
+```
+
+### 데이터 흐름 테스트
+
+```bash
+echo '{"message":"Test","level":"info","app":"demo","host":"localhost"}' | \
+  docker exec -i kafka1 kafka-console-producer --topic raw-logs --bootstrap-server kafka1:9092
+
+docker exec -it kafka1 kafka-console-consumer --topic ocsf-logs --bootstrap-server kafka1:9092 --from-beginning
+```
 
 ---
 
