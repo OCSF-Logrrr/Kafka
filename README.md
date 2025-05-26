@@ -1,4 +1,5 @@
 # Kafka
+이 문서는 Kafka를 이용하여 사용자 환경에서 로그를 수집하고, Python transform 서비스를 통해 OCSF 포맷으로 변환하여 중앙 Kafka 클러스터에 전송하는 과정을 안내합니다.
 
 ## 목차
 
