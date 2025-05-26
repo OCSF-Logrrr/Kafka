@@ -259,13 +259,13 @@ for msg in consumer:
 
 ## 외부 데이터 흐름 테스트
 
-Vector와 ELK(Logstash/Elasticsearch/Kibana) 환경이 이미 구축되어 있다고 가정합니다. 아래 절차를 통해 로그 변환 및 수집 흐름을 검증하세요.
+Vector와 ELK(Logstash/Elasticsearch/Kibana) 환경이 이미 구축되어 있다고 가정. 아래 절차를 통해 로그 변환 및 수집 흐름을 검증.
 
 1. **Vector를 통한 로그 전송**:
 
    ```bash
    echo '{"message":"Test Log","level":"debug","app":"demo","host":"server1"}' \
-     | sudo tee -a /var/log/app/app.log
+     | sudo tee -a /var/log/test.log
    ```
 
    ```bash
@@ -288,7 +288,7 @@ Vector와 ELK(Logstash/Elasticsearch/Kibana) 환경이 이미 구축되어 있�
      ```
 4. **문제 해결 팁**:
 
-   * Kafka 전송 누락: Vector 로그`/var/log/vector/vector.log` 확인 (사용자 환경에 맞게 설정)
+   * Kafka 전송 누락: Vector 로그`/var/log/test.log` 확인 (사용자 환경에 맞게 설정)
    * transform 오류: 컨테이너 내부 예외 메시지 확인
    * Logstash 오류: `/var/log/logstash/logstash-plain.log` 확인 (사용자 환경에 맞게 설정)
 
