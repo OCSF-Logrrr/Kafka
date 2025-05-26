@@ -289,9 +289,9 @@ Vector와 ELK(Logstash/Elasticsearch/Kibana) 환경이 이미 구축되어 있�
      ```
 4. **문제 해결 팁**:
 
-   * Kafka 전송 누락: Vector 로그(`/var/log/vector/vector.log`) 확인
+   * Kafka 전송 누락: Vector 로그`/var/log/vector/vector.log` 확인 (사용자 환경에 맞게 설정)
    * transform 오류: 컨테이너 내부 예외 메시지 확인
-   * Logstash 오류: `/var/log/logstash/logstash-plain.log` 확인
+   * Logstash 오류: `/var/log/logstash/logstash-plain.log` 확인 (사용자 환경에 맞게 설정)
 
 ## 운영 및 확장
 
@@ -299,52 +299,7 @@ Vector와 ELK(Logstash/Elasticsearch/Kibana) 환경이 이미 구축되어 있�
 * **보안**: TLS/SASL 설정
 * **모니터링**: Prometheus/Grafana 연동
 * **로그 수집**: Filebeat, Fluentd 등
-
-## 주요 명령어
-
-### 사전 준비
-
-```bash
-sudo apt update
-sudo apt install -y apt-transport-https ca-certificates curl software-properties-common git
-curl -fsSL https://get.docker.com | sudo sh
-sudo usermod -aG docker $USER
-sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-```
-
-### 리포지토리 클론
-
-```bash
-cd ~/projects
-git clone https://github.com/OCSF-Logrrr/Kafka.git kafka-transform-server
-cd kafka-transform-server
-```
-
-### 컨테이너 실행 및 관리
-
-```bash
-docker-compose up -d
-docker-compose ps
-docker logs -f transformer
-```
-
-### 토픽 생성
-
-```bash
-docker exec -it kafka1 kafka-topics --create --topic raw-logs --bootstrap-server kafka1:9092 --partitions 3 --replication-factor 3
-docker exec -it kafka1 kafka-topics --create --topic ocsf-logs --bootstrap-server kafka1:9092 --partitions 3 --replication-factor 3
-```
-
-### 데이터 흐름 테스트
-
-```bash
-echo '{"message":"Test","level":"info","app":"demo","host":"localhost"}' | \
-  docker exec -i kafka1 kafka-console-producer --topic raw-logs --bootstrap-server kafka1:9092
-
-docker exec -it kafka1 kafka-console-consumer --topic ocsf-logs --bootstrap-server kafka1:9092 --from-beginning
-```
-
+* 
 ---
 
 *작성일: 2025-05-26*
